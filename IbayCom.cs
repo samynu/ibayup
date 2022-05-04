@@ -7,6 +7,9 @@ internal class IbayCom
     Uri baseUri = new Uri("https://ibay.com.mv");
     String loginUri = "https://ibay.com.mv/index.php";
     String addPostUri = "https://ibay.com.mv/index.php?page=add&cid=324";
+    String postAddedStr = "Your Listing has been Submited Successfully";
+    String postFailedStr = "Your Listing has been Submited Successfully";
+
     private string userName;
     private string password;
 
@@ -49,12 +52,9 @@ internal class IbayCom
         var response = await client.PostAsync(loginUri, content);
 
 
-
-        if(response.StatusCode != HttpStatusCode.OK) return false;  //uknown error
-
-
-        // Console.WriteLine(await response.Content.ReadAsStringAsync());
-        
+        //something else might be wrong!
+        if(response.StatusCode != HttpStatusCode.OK) return false;  
+         
         
         Console.WriteLine("Response headers: " + response.Headers);
 
@@ -76,71 +76,76 @@ internal class IbayCom
 
     }
 
-     public async Task<bool> AddPost(
-         string hw_rid, 
-         string cid, 
-         string hw_region_id, 
-         string hw_region_upd, 
-         string hw_reg_1, 
-         string hw_reg_2, 
-         string f_title, 
-         string f_desc, 
-         string f_capacity, 
-         string f_condition, 
-         string f_video, 
-         string hw_auct_enabled, 
-         string hw_exp_days, 
-         string f_price, 
-         string f_quantity, 
-         string is_upl_adv_images, 
-         string hi_images_upload1, 
-         string hi_images_upload2, 
-         string hi_images_upload3, 
-         string hi_images_upload4, 
-         string term, 
-         string go)
+     public async Task<bool> AddPost(ProductRow product)
     {
         MultipartFormDataContent data = new MultipartFormDataContent("----MyAppBoundary" + DateTime.Now.Ticks.ToString("x"));
+        
+        data.Add(new StringContent("2057677023"), "hw_rid");
+        data.Add(new StringContent(product.cid), "cid");        
+        data.Add(new StringContent(product.hw_reg_1), "hw_reg_1");
+        data.Add(new StringContent(product.hw_reg_2), "hw_reg_2");
+        data.Add(new StringContent(product.f_title), "f_title");
+        data.Add(new StringContent(product.f_desc), "f_descr");
+        data.Add(new StringContent(product.f_capacity), "f_capacity");
+        data.Add(new StringContent(product.f_condition), "f_condition");
+        data.Add(new StringContent(product.f_video), "f_video");
+        data.Add(new StringContent(product.hw_auct_enabled), "hw_auct_enabled");
+        data.Add(new StringContent(product.hw_exp_days), "hw_exp_days");
+        data.Add(new StringContent(product.f_price), "f_price");
+        data.Add(new StringContent(product.f_quantity), "f_quantity");
+        data.Add(new StringContent("0"), "is_upl_adv_images");
+        
+        data.Add(new StringContent("submit"), "go");
 
-        data.Add(new StringContent(hw_rid), "hw_rid");
-        data.Add(new StringContent(cid), "cid");
-        // data.Add(new StringContent(hw_region_id), "hw_region_id");
-        // data.Add(new StringContent(hw_region_upd), "hw_region_upd");
-        data.Add(new StringContent(hw_reg_1), "hw_reg_1");
-        data.Add(new StringContent(hw_reg_2), "hw_reg_2");
-        data.Add(new StringContent(f_title), "f_title");
-        data.Add(new StringContent(f_desc), "f_descr");
-        data.Add(new StringContent(f_capacity), "f_capacity");
-        data.Add(new StringContent(f_condition), "f_condition");
-        // data.Add(new StringContent(f_video), "f_video");
-        data.Add(new StringContent(hw_auct_enabled), "hw_auct_enabled");
-        data.Add(new StringContent(hw_exp_days), "hw_exp_days");
-        data.Add(new StringContent(f_price), "f_price");
-        data.Add(new StringContent(f_quantity), "f_quantity");
-        data.Add(new StringContent(is_upl_adv_images), "is_upl_adv_images");
-        // data.Add(new StringContent(hi_images_upload1), "hi_images_upload1");
-        // data.Add(new StringContent(hi_images_upload2), "hi_images_upload2");
-        // data.Add(new StringContent(hi_images_upload3), "hi_images_upload3");
-        // data.Add(new StringContent(hi_images_upload4), "hi_images_upload4");
-        // data.Add(new StringContent(term), "term[]");
-        data.Add(new StringContent(go), "go");
 
-        var file = File.OpenRead(hi_images_upload1);
-        var streamContent = new StreamContent(file);
 
-        var fileContent = new ByteArrayContent(await streamContent.ReadAsByteArrayAsync());
 
-        data.Add(fileContent, "hi_images_upload1", Path.GetFileName(hi_images_upload1));
+        if(product.hi_images_upload1 != "" && product.hi_images_upload1 != null)
+        {
+            var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload1);
+            data.Add(fileContent, "hi_images_upload1", Path.GetFileName(product.hi_images_upload1));
+        }
+        if(product.hi_images_upload2 != "" && product.hi_images_upload2 != null)
+        {
+            var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload2);
+            data.Add(fileContent, "hi_images_upload2", Path.GetFileName(product.hi_images_upload2));
+        }
+        if(product.hi_images_upload1 != "" && product.hi_images_upload1 != null)
+        {
+            var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload3);
+            data.Add(fileContent, "hi_images_upload3", Path.GetFileName(product.hi_images_upload3));
+        }
+        if(product.hi_images_upload4 != "" && product.hi_images_upload4 != null)
+        {
+            var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload4);
+            data.Add(fileContent, "hi_images_upload4", Path.GetFileName(product.hi_images_upload4));
+        }
 
 
         HttpResponseMessage response = await client.PostAsync(addPostUri, data);
 
         
 
-        Console.WriteLine(await response.Content.ReadAsStringAsync());
+        var responseStr = await response.Content.ReadAsStringAsync();
+
+        if(responseStr.Contains(postAddedStr)){
+            Console.WriteLine(postAddedStr);
+            return true;
+        }else{
+            Console.WriteLine(postFailedStr);
+            return false;
+        }
 
 
-        return true;
 
+    }
+
+    private async Task<ByteArrayContent> GetByteArrayContent(string filePath)
+    {
+        var file = File.OpenRead(filePath);
+        var streamContent = new StreamContent(file);
+
+
+        return new ByteArrayContent(await streamContent.ReadAsByteArrayAsync());
     }
 }
