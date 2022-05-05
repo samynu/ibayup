@@ -8,7 +8,7 @@ internal class IbayCom
     String loginUri = "https://ibay.com.mv/index.php";
     String addPostUri = "https://ibay.com.mv/index.php?page=add&cid=324";
     String postAddedStr = "Your Listing has been Submited Successfully";
-    String postFailedStr = "Your Listing has been Submited Successfully";
+    String postFailedStr = "Post failed";
 
     private string userName;
     private string password;
@@ -33,6 +33,7 @@ internal class IbayCom
 
     public async Task<bool> Login()
     {
+        Console.WriteLine("Logging in...");
         //reset cookies
         cookieContainer.SetCookies(baseUri, "");
 
@@ -50,7 +51,7 @@ internal class IbayCom
         var content = new FormUrlEncodedContent(values);
         
         var response = await client.PostAsync(loginUri, content);
-
+        
 
         //something else might be wrong!
         if(response.StatusCode != HttpStatusCode.OK) return false;  
@@ -102,21 +103,25 @@ internal class IbayCom
 
         if(product.hi_images_upload1 != "" && product.hi_images_upload1 != null)
         {
+            Console.WriteLine(product.hi_images_upload1);
             var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload1);
             data.Add(fileContent, "hi_images_upload1", Path.GetFileName(product.hi_images_upload1));
         }
         if(product.hi_images_upload2 != "" && product.hi_images_upload2 != null)
         {
+            Console.WriteLine(product.hi_images_upload1);
             var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload2);
             data.Add(fileContent, "hi_images_upload2", Path.GetFileName(product.hi_images_upload2));
         }
-        if(product.hi_images_upload1 != "" && product.hi_images_upload1 != null)
+        if(product.hi_images_upload3 != "" && product.hi_images_upload3 != null)
         {
+            Console.WriteLine(product.hi_images_upload1);
             var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload3);
             data.Add(fileContent, "hi_images_upload3", Path.GetFileName(product.hi_images_upload3));
         }
         if(product.hi_images_upload4 != "" && product.hi_images_upload4 != null)
         {
+            Console.WriteLine(product.hi_images_upload1);
             var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload4);
             data.Add(fileContent, "hi_images_upload4", Path.GetFileName(product.hi_images_upload4));
         }

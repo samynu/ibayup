@@ -33,9 +33,9 @@ public class AppArguments
                         Password = v;
                 
             }},            
-            { "f|fileName=", "The CSV {File} to process.",
+            { "f|fileName=", "The CSV {File} to process (default: products.csv).",
             v => File = v },
-            { "i|imageDir=", "Set the Path to image directory. Defaults to current directory.",
+            { "i|imageDir=", "Set the Path to image directory. (default: current directory).",
             v => ImagePath = v },
             { "h|help",  "show help", 
             v => show_help = v != null },
@@ -45,9 +45,9 @@ public class AppArguments
         try {
             extra = p.Parse (args);
             if (UserName == null || UserName == "")
-                throw new OptionException ("username is required", "-u");
+                throw new OptionException ("username and password is required", "-u");
             if (Password == null || Password == "")
-                throw new OptionException ("password is required", "-p");
+                throw new OptionException ("username and password is required", "-p");
 
         }
         catch (OptionException e) {

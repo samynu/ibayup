@@ -1,4 +1,4 @@
-
+using System.Text.Json;
 
 public class UploadManager
 {
@@ -12,11 +12,12 @@ public class UploadManager
     }
 
 
-    async void ProcessProductRecords()
+    public async Task ProcessProductRecords()
     {
         
         var ibayCom = new IbayCom(userName:appArguments.UserName, password:  appArguments.Password);
         var result = await ibayCom.Login();
+        // var result = true;
 
         if(result){
 
@@ -31,19 +32,41 @@ public class UploadManager
 
         string line;
 
-        FileStream stream = new FileStream(appArguments.File, FileMode.Open);
-        StreamReader streamReader = new StreamReader(stream);
+        try{
 
-        while((line = streamReader.ReadLine()) != null){
-            Console.WriteLine("Read line: " + line);
+            FileStream stream = new FileStream(appArguments.File, FileMode.Open);
+            StreamReader streamReader = new StreamReader(stream);
+            Console.WriteLine("Product file: " + appArguments.File + " read success");
 
-            //POST to ibay
-            var productRow = new ProductRow(line.Split(','), appArguments.ImagePath);
-            ibayCom.AddPost(productRow);
+            
+
+
+            while((line = streamReader.ReadLine()) != null){
+                Console.WriteLine("Reading line: " + line);
+
+                //POST to ibay
+                try{
+                    var productRow = new ProductRow(line.Split(','), appArguments.ImagePath);
+                    var jsonOptions = new JsonSerializerOptions {WriteIndented = true};
+                    var jsonProduct = JsonSerializer.Serialize(productRow, jsonOptions);
+                    Console.WriteLine("Posting item: " + jsonProduct);
+                    await ibayCom.AddPost(productRow);
+
+                }catch(Exception ex){
+                    Console.WriteLine("Error: " + ex.Message);
+                }
+
+            }
+            streamReader.Close();
+        }catch(FileNotFoundException ex){
+            Console.WriteLine("File " + appArguments.File + " not found!");
+            return;
+        }finally{
 
         }
 
-        streamReader.Close();
+
+
 
 
 
