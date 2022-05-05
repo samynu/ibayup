@@ -63,6 +63,8 @@ internal class IbayCom
         IEnumerable<string> value; 
  
         if(response.Headers.TryGetValues("Set-Cookie", out value)){
+            if(value.Count() <= 0) return false;
+
             foreach( var val in value)
             {
                 Console.WriteLine("cookievalue:" + val);
@@ -103,25 +105,25 @@ internal class IbayCom
 
         if(product.hi_images_upload1 != "" && product.hi_images_upload1 != null)
         {
-            Console.WriteLine(product.hi_images_upload1);
+            
             var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload1);
             data.Add(fileContent, "hi_images_upload1", Path.GetFileName(product.hi_images_upload1));
         }
         if(product.hi_images_upload2 != "" && product.hi_images_upload2 != null)
         {
-            Console.WriteLine(product.hi_images_upload1);
+            
             var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload2);
             data.Add(fileContent, "hi_images_upload2", Path.GetFileName(product.hi_images_upload2));
         }
         if(product.hi_images_upload3 != "" && product.hi_images_upload3 != null)
         {
-            Console.WriteLine(product.hi_images_upload1);
+            
             var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload3);
             data.Add(fileContent, "hi_images_upload3", Path.GetFileName(product.hi_images_upload3));
         }
         if(product.hi_images_upload4 != "" && product.hi_images_upload4 != null)
         {
-            Console.WriteLine(product.hi_images_upload1);
+            
             var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload4);
             data.Add(fileContent, "hi_images_upload4", Path.GetFileName(product.hi_images_upload4));
         }

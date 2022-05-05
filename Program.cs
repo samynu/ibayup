@@ -7,12 +7,13 @@ Console.WriteLine("--------------");
 var appArguments = new AppArguments();
 
 
-appArguments.ParseCommand(args);
+var success = appArguments.ParseCommand(args);
 
-var uploadManager = new UploadManager(appArguments);
+if(success){
+    var uploadManager = new UploadManager(appArguments);
+    await uploadManager.ProcessProductRecords();
 
-
-await uploadManager.ProcessProductRecords();
+}
 
 
 

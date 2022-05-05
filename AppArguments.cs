@@ -11,7 +11,7 @@ public class AppArguments
 
 
 
-    public void ParseCommand(string[] args)
+    public bool ParseCommand(string[] args)
     {
 
 
@@ -48,19 +48,20 @@ public class AppArguments
                 throw new OptionException ("username and password is required", "-u");
             if (Password == null || Password == "")
                 throw new OptionException ("username and password is required", "-p");
-
+                
+            return true;
         }
         catch (OptionException e) {
             Console.Write ("ibayup: ");
             Console.WriteLine (e.Message);
             ShowHelp(p);
-            return;
+            return false;
         }
 
 
         if (show_help) {
             ShowHelp (p);
-            return;
+            return false;
         }
 
     }
