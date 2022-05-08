@@ -1,12 +1,13 @@
 
 public class ProductRow
 {    
-    public string cid {get; set;}
+    public string cid {get; set;}  
     public string hw_reg_1 {get; set;}
     public string hw_reg_2 {get; set;}
     public string f_title {get; set;}
     public     string f_desc {get; set;}
     public string f_capacity {get; set;}
+    public string f_brand {get; set;}
     public string f_condition {get; set;}
     public string f_video {get; set;}
     public string hw_auct_enabled {get; set;}

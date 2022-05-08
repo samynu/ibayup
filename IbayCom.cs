@@ -90,6 +90,8 @@ internal class IbayCom
         data.Add(new StringContent(product.f_title), "f_title");
         data.Add(new StringContent(product.f_desc), "f_descr");
         data.Add(new StringContent(product.f_capacity), "f_capacity");
+
+        data.Add(new StringContent(product.f_brand), "f_brand");
         data.Add(new StringContent(product.f_condition), "f_condition");
         data.Add(new StringContent(product.f_video), "f_video");
         data.Add(new StringContent(product.hw_auct_enabled), "hw_auct_enabled");
