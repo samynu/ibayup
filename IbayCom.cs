@@ -149,6 +149,71 @@ internal class IbayCom
 
     }
 
+
+    public async Task<bool> AddPost(Dictionary<string,string> paramList)
+    {
+        MultipartFormDataContent data = new MultipartFormDataContent("----MyAppBoundary" + DateTime.Now.Ticks.ToString("x"));
+        
+        
+        await AddImageData(ProductRow.Constants.hi_images_upload1, paramList, data);
+        await AddImageData(ProductRow.Constants.hi_images_upload2, paramList, data);
+        await AddImageData(ProductRow.Constants.hi_images_upload3, paramList, data);
+        await AddImageData(ProductRow.Constants.hi_images_upload4, paramList, data);
+
+        
+        
+        paramList.ToList().ForEach(p => {
+            data.Add(new StringContent(p.Value), p.Key);
+            Console.WriteLine($"add- {p.Key} : {p.Value}");
+            });
+
+
+
+        data.Add(new StringContent("2057677023"), "hw_rid");        
+        data.Add(new StringContent("0"), "is_upl_adv_images");        
+        data.Add(new StringContent("submit"), "go");
+
+
+        
+
+        HttpResponseMessage response = await client.PostAsync(addPostUri, data);
+
+        
+
+        var responseStr = await response.Content.ReadAsStringAsync();
+
+        
+        if(responseStr.Contains(postAddedStr)){
+            Console.WriteLine(postAddedStr);
+            return true;
+        }else{
+            Console.WriteLine(postFailedStr);
+            return false;
+        }
+
+
+
+    }
+
+    private async Task AddImageData(string key, Dictionary<string, string> paramList, MultipartFormDataContent data)
+    {
+        var fileName = paramList.GetValueOrDefault(key);
+        if(fileName != null && fileName != ""){
+
+            var imageFile = new FileInfo(fileName);
+
+            if(imageFile.Exists)
+            {
+                
+                var fileContent = await GetByteArrayContent(filePath: imageFile.FullName);
+                data.Add(fileContent, ProductRow.Constants.hi_images_upload1, Path.GetFileName(imageFile.FullName));
+            }
+        }
+
+        paramList.Remove(key);
+    }
+
+
     private async Task<ByteArrayContent> GetByteArrayContent(string filePath)
     {
         var file = File.OpenRead(filePath);

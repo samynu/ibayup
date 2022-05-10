@@ -1,6 +1,14 @@
 
 public class ProductRow
-{    
+{
+
+    public static class Constants{
+        public const string hi_images_upload1 = "hi_images_upload1";
+        public const string hi_images_upload2 = "hi_images_upload2";
+        public const string hi_images_upload3 = "hi_images_upload3";
+        public const string hi_images_upload4 = "hi_images_upload4";
+    }
+
     public string cid {get; set;}  
     public string hw_reg_1 {get; set;}
     public string hw_reg_2 {get; set;}
