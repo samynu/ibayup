@@ -6,10 +6,9 @@ public class AppArguments
 {
     public string? UserName {get;set;} = null;
     public string? Password { get; set; } = null;
-    public string File { get; set; } = @"products.csv";
+    public string File { get; set; } = @"products.xlsx";
     public string ImagePath { get; set; } = @".\";
-
-
+    public int TimeOut { get;  set; } = 0;
 
     public bool ParseCommand(string[] args)
     {
@@ -33,9 +32,11 @@ public class AppArguments
                         Password = v;
                 
             }},            
-            { "f|fileName=", "The CSV {File} to process (default: products.csv).",
+            { "f|fileName=", "The CSV {File} to process (default: products.xlsx).",
             v => File = v },
             { "i|imageDir=", "Set the Path to image directory. (default: current directory).",
+            v => ImagePath = v },
+            { "d|delay=", "Set the delay period between uploads (default: 0).",
             v => ImagePath = v },
             { "h|help",  "show help", 
             v => show_help = v != null },
@@ -69,7 +70,7 @@ public class AppArguments
 
     private void ShowHelp (OptionSet p)
     {
-        Console.WriteLine ("Usage: ibay -u {username} -p {password} \n");
+        Console.WriteLine ("Usage: ibay -u {username} -p {password}\n");
         
         Console.WriteLine ("Options:");
         p.WriteOptionDescriptions (Console.Out);

@@ -79,6 +79,8 @@ internal class IbayCom
 
     }
 
+
+    //****Depricated
      public async Task<bool> AddPost(ProductRow product)
     {
         MultipartFormDataContent data = new MultipartFormDataContent("----MyAppBoundary" + DateTime.Now.Ticks.ToString("x"));
@@ -150,15 +152,15 @@ internal class IbayCom
     }
 
 
-    public async Task<bool> AddPost(Dictionary<string,string> paramList)
+    public async Task<bool> AddPost(Dictionary<string,string> paramList, string imagePath)
     {
         MultipartFormDataContent data = new MultipartFormDataContent("----MyAppBoundary" + DateTime.Now.Ticks.ToString("x"));
         
         
-        await AddImageData(ProductRow.Constants.hi_images_upload1, paramList, data);
-        await AddImageData(ProductRow.Constants.hi_images_upload2, paramList, data);
-        await AddImageData(ProductRow.Constants.hi_images_upload3, paramList, data);
-        await AddImageData(ProductRow.Constants.hi_images_upload4, paramList, data);
+        await AddImageData(ProductRow.Constants.hi_images_upload1, paramList,imagePath, data);
+        await AddImageData(ProductRow.Constants.hi_images_upload2, paramList,imagePath, data);
+        await AddImageData(ProductRow.Constants.hi_images_upload3, paramList,imagePath, data);
+        await AddImageData(ProductRow.Constants.hi_images_upload4, paramList,imagePath, data);
 
         
         
@@ -195,18 +197,19 @@ internal class IbayCom
 
     }
 
-    private async Task AddImageData(string key, Dictionary<string, string> paramList, MultipartFormDataContent data)
+    private async Task AddImageData(string key, Dictionary<string, string> paramList, string imagePath, MultipartFormDataContent data)
     {
         var fileName = paramList.GetValueOrDefault(key);
         if(fileName != null && fileName != ""){
 
-            var imageFile = new FileInfo(fileName);
+            var file = Path.Combine(imagePath,fileName);
+            var imageFile = new FileInfo(file);
 
             if(imageFile.Exists)
             {
                 
                 var fileContent = await GetByteArrayContent(filePath: imageFile.FullName);
-                data.Add(fileContent, ProductRow.Constants.hi_images_upload1, Path.GetFileName(imageFile.FullName));
+                data.Add(fileContent, key, Path.GetFileName(imageFile.FullName));
             }
         }
 

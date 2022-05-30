@@ -97,9 +97,11 @@ public class UploadManager
                 stream.Position = 0;
                 XSSFWorkbook xssWorkbook = new XSSFWorkbook(stream);
                 sheet = xssWorkbook.GetSheetAt(0);
-                IRow headerRow = sheet.GetRow(0);
+                IRow headerRow = sheet.GetRow(1);   //Row Zero(0) contains Readable titles
                 int cellCount = headerRow.LastCellNum;
-                for (int j = 0; j < cellCount; j++)
+
+                
+                for (int j = 5; j < cellCount; j++)     //First 5 rows for other use
                 {
                     ICell cell = headerRow.GetCell(j);
                     if (cell == null || string.IsNullOrWhiteSpace(cell.ToString())) throw new Exception($"Cant have empty header cell: {j}");
@@ -107,12 +109,23 @@ public class UploadManager
                         headerList.Add(cell.ToString());
                     } 
                 }
-                for (int i = (sheet.FirstRowNum + 1); i <= sheet.LastRowNum; i++)
+
+                
+                for (int i = (sheet.FirstRowNum + 2); i <= sheet.LastRowNum; i++)
                 {
                     IRow row = sheet.GetRow(i);
                     if (row == null) continue;
+
+                    ICell cell = row.GetCell(4);      //Designate column #5 for publish-yes/no
+                    if (cell == null || string.IsNullOrWhiteSpace(cell.ToString())) throw new Exception($"Cant have empty publish cell: {5}");
+                    {
+                        if(cell.ToString() != "yes") continue;  //Skip record
+                        Console.WriteLine($"Skipping row: {i}");
+                    }
+
+
                     if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
-                    for (int j = row.FirstCellNum; j < cellCount; j++)
+                    for (int j = row.FirstCellNum + 5; j < cellCount; j++)
                     {
                         if (row.GetCell(j) != null)
                         {
@@ -125,7 +138,8 @@ public class UploadManager
                     if(paramList.Count>0){
 
                         // paramList.ToList().ForEach(r => Console.WriteLine(r.ToString()));
-                        await ibayCom.AddPost(paramList);
+                        await ibayCom.AddPost(paramList, appArguments.ImagePath);
+                        if(appArguments.TimeOut > 0) Thread.Sleep(appArguments.TimeOut * 1000);
                     }
                     paramList.Clear(); 
                 }
