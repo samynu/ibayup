@@ -10,6 +10,8 @@ public class AppArguments
     public string ImagePath { get; set; } = @".\";
     public int TimeOut { get;  set; } = 0;
 
+    public bool Verbose {get; set;} = false;
+
     public bool ParseCommand(string[] args)
     {
 
@@ -37,7 +39,9 @@ public class AppArguments
             { "i|imageDir=", "Set the Path to image directory. (default: current directory).",
             v => ImagePath = v },
             { "d|delay=", "Set the delay period between uploads (default: 0).",
-            v => ImagePath = v },
+            v => TimeOut = int.Parse(v) },
+            { "v|verbose", "Verbose mode (log detail)",
+            v => Verbose = v != null },
             { "h|help",  "show help", 
             v => show_help = v != null },
         };

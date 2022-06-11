@@ -25,10 +25,10 @@ public class UploadManager
         // var result = true;
 
         if(result){
-
-            Console.WriteLine("Logon Success!");
+            
+            PrettyLog.LogSuccess("Logon Success!");
         }else{
-            Console.WriteLine("Logon failed!");
+            PrettyLog.LogError("Logon failed!");
             return;
         }
 
@@ -41,49 +41,16 @@ public class UploadManager
 
         
     }
+    
 
-    private async Task ReadCsvFile(string file)
-    {
-        string line;
-
-        try{
-
-            FileStream stream = new FileStream(appArguments.File, FileMode.Open);
-            StreamReader streamReader = new StreamReader(stream);
-            Console.WriteLine("Product file: " + appArguments.File + " read success");
-
-            
-
-
-            while((line = streamReader.ReadLine()) != null){
-                Console.WriteLine("Reading line: " + line);
-
-                //POST to ibay
-                try{
-                    var productRow = new ProductRow(line.Split(','), appArguments.ImagePath);
-                    var jsonOptions = new JsonSerializerOptions {WriteIndented = true};
-                    var jsonProduct = JsonSerializer.Serialize(productRow, jsonOptions);
-                    Console.WriteLine("Posting item: " + jsonProduct);
-                    await ibayCom.AddPost(productRow);
-
-                }catch(Exception ex){
-                    Console.WriteLine("Error: " + ex.Message);
-                }
-
-            }
-            streamReader.Close();
-        }catch(FileNotFoundException ex){
-            Console.WriteLine("File " + appArguments.File + " not found!");
-            return;
-        }
-    }
 
     private async Task ReadExcelFile(string file)
     {
         FileInfo excelFile = new FileInfo(appArguments.File);
         if (!excelFile.Exists || excelFile.Extension != ".xlsx")
         {
-            throw new FileNotFoundException("File does not exist:" + excelFile.FullName + $"ext:{excelFile.Extension}");
+            PrettyLog.LogError("File does not exist:" + excelFile.FullName + $"ext:{excelFile.Extension}");
+            return;
             
         }
         
@@ -100,46 +67,68 @@ public class UploadManager
                 IRow headerRow = sheet.GetRow(1);   //Row Zero(0) contains Readable titles
                 int cellCount = headerRow.LastCellNum;
 
+                if (cellCount <= 5 )
+                {
+                    PrettyLog.LogError("Error no data columns found");
+                    return;
+                }
                 
-                for (int j = 5; j < cellCount; j++)     //First 5 rows for other use
+                for (int j = 5; j < cellCount; j++)     //First 5 cols for other use
                 {
                     ICell cell = headerRow.GetCell(j);
-                    if (cell == null || string.IsNullOrWhiteSpace(cell.ToString())) throw new Exception($"Cant have empty header cell: {j}");
+                    if (cell == null || string.IsNullOrWhiteSpace(cell.ToString())) 
                     {
-                        headerList.Add(cell.ToString());
-                    } 
+                        PrettyLog.LogError($"Cant have empty header cell: {j+1}");
+                        return;
+                    }
+                    headerList.Add(cell.ToString());
+                     
                 }
 
                 
                 for (int i = (sheet.FirstRowNum + 2); i <= sheet.LastRowNum; i++)
                 {
                     IRow row = sheet.GetRow(i);
-                    if (row == null) continue;
+                    if (row == null) 
+                    {PrettyLog.LogWarning($"Skipping empty row {i+1}"); continue;}
 
                     ICell cell = row.GetCell(4);      //Designate column #5 for publish-yes/no
-                    if (cell == null || string.IsNullOrWhiteSpace(cell.ToString())) throw new Exception($"Cant have empty publish cell: {5}");
+                    if (cell == null || string.IsNullOrWhiteSpace(cell.ToString())) 
                     {
-                        if(cell.ToString() != "yes") continue;  //Skip record
-                        Console.WriteLine($"Skipping row: {i}");
+                        PrettyLog.LogWarning($"Empty publish(Y/N) cell reached, Ending at row #: {i+1}");
+                        return;
+                    }
+
+                    if(cell.ToString().ToLower() != "yes") 
+                    {
+                        PrettyLog.LogWarning($"Skipping row #: {i+1}");
+                        continue;  //Skip record
                     }
 
 
                     if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
-                    for (int j = row.FirstCellNum + 5; j < cellCount; j++)
+                    for (int j = 5; j < cellCount; j++)
                     {
                         if (row.GetCell(j) != null)
                         {
                             if (!string.IsNullOrEmpty(row.GetCell(j).ToString()) && !string.IsNullOrWhiteSpace(row.GetCell(j).ToString()))
                             {
-                                paramList.Add(headerList[j], row.GetCell(j).ToString());
+                                paramList.Add(headerList[j-5], row.GetCell(j).ToString());
                             }
                         }
                     }
                     if(paramList.Count>0){
 
                         // paramList.ToList().ForEach(r => Console.WriteLine(r.ToString()));
-                        await ibayCom.AddPost(paramList, appArguments.ImagePath);
-                        if(appArguments.TimeOut > 0) Thread.Sleep(appArguments.TimeOut * 1000);
+                        var success = await ibayCom.AddPost(paramList, appArguments.ImagePath, appArguments.Verbose);
+
+                        if(success) PrettyLog.LogSuccess($"Post Added row # {i+1} Successfully!");
+                        else PrettyLog.LogError($"Post row # {i+1} Failed");
+                        if(appArguments.TimeOut > 0) 
+                        {
+                            PrettyLog.LogWarning($"Sleep for {appArguments.TimeOut} seconds");
+                            Thread.Sleep(appArguments.TimeOut * 1000);
+                        }
                     }
                     paramList.Clear(); 
                 }

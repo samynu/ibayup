@@ -57,7 +57,7 @@ internal class IbayCom
         if(response.StatusCode != HttpStatusCode.OK) return false;  
          
         
-        Console.WriteLine("Response headers: " + response.Headers);
+        // Console.WriteLine("Response headers: " + response.Headers);
 
 
         IEnumerable<string> value; 
@@ -67,7 +67,7 @@ internal class IbayCom
 
             foreach( var val in value)
             {
-                Console.WriteLine("cookievalue:" + val);
+                // Console.WriteLine("cookievalue:" + val);
 
                 if(val.Contains("EC2_L=deleted")) return false;
             }
@@ -80,79 +80,8 @@ internal class IbayCom
     }
 
 
-    //****Depricated
-     public async Task<bool> AddPost(ProductRow product)
-    {
-        MultipartFormDataContent data = new MultipartFormDataContent("----MyAppBoundary" + DateTime.Now.Ticks.ToString("x"));
-        
-        data.Add(new StringContent("2057677023"), "hw_rid");
-        data.Add(new StringContent(product.cid), "cid");        
-        data.Add(new StringContent(product.hw_reg_1), "hw_reg_1");
-        data.Add(new StringContent(product.hw_reg_2), "hw_reg_2");
-        data.Add(new StringContent(product.f_title), "f_title");
-        data.Add(new StringContent(product.f_desc), "f_descr");
-        data.Add(new StringContent(product.f_capacity), "f_capacity");
 
-        data.Add(new StringContent(product.f_brand), "f_brand");
-        data.Add(new StringContent(product.f_condition), "f_condition");
-        data.Add(new StringContent(product.f_video), "f_video");
-        data.Add(new StringContent(product.hw_auct_enabled), "hw_auct_enabled");
-        data.Add(new StringContent(product.hw_exp_days), "hw_exp_days");
-        data.Add(new StringContent(product.f_price), "f_price");
-        data.Add(new StringContent(product.f_quantity), "f_quantity");
-        data.Add(new StringContent("0"), "is_upl_adv_images");
-        
-        data.Add(new StringContent("submit"), "go");
-
-
-
-
-        if(product.hi_images_upload1 != "" && product.hi_images_upload1 != null)
-        {
-            
-            var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload1);
-            data.Add(fileContent, "hi_images_upload1", Path.GetFileName(product.hi_images_upload1));
-        }
-        if(product.hi_images_upload2 != "" && product.hi_images_upload2 != null)
-        {
-            
-            var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload2);
-            data.Add(fileContent, "hi_images_upload2", Path.GetFileName(product.hi_images_upload2));
-        }
-        if(product.hi_images_upload3 != "" && product.hi_images_upload3 != null)
-        {
-            
-            var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload3);
-            data.Add(fileContent, "hi_images_upload3", Path.GetFileName(product.hi_images_upload3));
-        }
-        if(product.hi_images_upload4 != "" && product.hi_images_upload4 != null)
-        {
-            
-            var fileContent = await GetByteArrayContent(filePath: product.hi_images_upload4);
-            data.Add(fileContent, "hi_images_upload4", Path.GetFileName(product.hi_images_upload4));
-        }
-
-
-        HttpResponseMessage response = await client.PostAsync(addPostUri, data);
-
-        
-
-        var responseStr = await response.Content.ReadAsStringAsync();
-
-        if(responseStr.Contains(postAddedStr)){
-            Console.WriteLine(postAddedStr);
-            return true;
-        }else{
-            Console.WriteLine(postFailedStr);
-            return false;
-        }
-
-
-
-    }
-
-
-    public async Task<bool> AddPost(Dictionary<string,string> paramList, string imagePath)
+    public async Task<bool> AddPost(Dictionary<string,string> paramList, string imagePath, bool logVerbose)
     {
         MultipartFormDataContent data = new MultipartFormDataContent("----MyAppBoundary" + DateTime.Now.Ticks.ToString("x"));
         
@@ -166,7 +95,7 @@ internal class IbayCom
         
         paramList.ToList().ForEach(p => {
             data.Add(new StringContent(p.Value), p.Key);
-            Console.WriteLine($"add- {p.Key} : {p.Value}");
+            if(logVerbose) PrettyLog.LogSilent($"add- {p.Key} : {p.Value}");
             });
 
 
@@ -186,10 +115,10 @@ internal class IbayCom
 
         
         if(responseStr.Contains(postAddedStr)){
-            Console.WriteLine(postAddedStr);
+            
             return true;
         }else{
-            Console.WriteLine(postFailedStr);
+            
             return false;
         }
 
