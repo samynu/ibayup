@@ -109,11 +109,29 @@ public class UploadManager
                     if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
                     for (int j = 5; j < cellCount; j++)
                     {
-                        if (row.GetCell(j) != null)
+                        var dataCell = row.GetCell(j);
+
+                        if (dataCell != null)
                         {
                             if (!string.IsNullOrEmpty(row.GetCell(j).ToString()) && !string.IsNullOrWhiteSpace(row.GetCell(j).ToString()))
                             {
-                                paramList.Add(headerList[j-5], row.GetCell(j).ToString());
+                                if(dataCell.CellType == CellType.Formula)
+                                {
+                                    switch(dataCell.CachedFormulaResultType) {
+                                    case CellType.Numeric:
+                                        paramList.Add(headerList[j-5], dataCell.NumericCellValue.ToString());
+                                        break;
+                                    case CellType.String:
+                                        paramList.Add(headerList[j-5], dataCell.RichStringCellValue.ToString());
+                                        
+                                        break;
+        }
+                                }
+                                else{
+
+                                    paramList.Add(headerList[j-5], row.GetCell(j).ToString());
+                                }
+                                
                             }
                         }
                     }
